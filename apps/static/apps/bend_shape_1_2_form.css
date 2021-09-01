@@ -1,0 +1,62 @@
+.inputDnD .form-control-file {
+	 position: relative;
+	 width: 100%;
+	 /*height: 100%;*/
+	 min-height: 6em;
+	 outline: none;
+	 visibility: hidden;
+	 cursor: pointer;
+	 background-color: #000;
+	 box-shadow: 0 0 5px solid currentColor;
+}
+
+ .inputDnD .form-control-file:before {
+	 content: attr(data-title);
+	 position: absolute;
+	 top: 0.5em;
+	 left: 0;
+	 width: 100%;
+	 min-height: 6em;
+	 line-height: 2em;
+	 padding-top: 1.5em;
+	 opacity: 1;
+	 visibility: visible;
+	 text-align: center;
+	 border: 0.25em dashed currentColor;
+	 transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+	 overflow: hidden;
+}
+ .inputDnD .form-control-file:hover:before {
+	 border-style: solid;
+	 box-shadow: inset 0px 0px 0px 0.08em currentColor;
+}
+
+
+
+fieldset.info-frame{
+    border: 1px solid rgba(200, 200, 200, 0.2) !important;
+    border-radius: 10px;
+    border
+    padding: 0 0 0 0;
+    margin: 0 0 0 0;
+    -webkit-box-shadow:  0px 0px 0px 0px #eee;
+            box-shadow:  0px 0px 0px 0px #eee;
+}
+
+
+
+legend.info-frame {
+    font-size: 0.8em !important;
+    color: rgba(100, 100, 100, 0.8);
+    text-align: left !important;
+    margin-left: 10px;
+    padding-left: 2px;
+    padding-right: 2px;
+    width: auto;
+    background-color:  rgba(255,255,255, 0.8);
+    border-radius: 5px;
+}
+
+.row > [class^="col"]  {
+  display: inline-block;
+}
