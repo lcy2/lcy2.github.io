@@ -1,0 +1,8 @@
+body > * {
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  margin: 10px;
+}
+
+#parent-container {
+  max-width: 700px;
+}

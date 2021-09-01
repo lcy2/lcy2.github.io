@@ -1,0 +1,22 @@
+.hlbox {
+  border-width: 5px;
+  border-style: solid;
+  position: absolute;
+}
+
+.oldbox {
+  border-color: blue;
+}
+
+.newbox {
+  border-color: red;
+}
+
+div[class^="page-"] {
+  /*display: inline-block;*/
+  position: relative;
+}
+
+body {
+  margin: 0;
+}
