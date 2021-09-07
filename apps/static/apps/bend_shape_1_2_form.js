@@ -33,6 +33,9 @@ jQuery(function() {
   var arc_length = 0;
   var output_freq = 400;
   var curve;
+  var curve2;
+  var fname;
+  var bend_ctr;
 
   var ct= 0;
 
@@ -50,43 +53,69 @@ jQuery(function() {
     curve.mouse = false;
     var lpts = curve.points.slice();
     lpts.push(curve.apex);
+    var lpts2 = curve2.points.slice();
+    let lpts_total = lpts.concat(lpts2);
     //console.log(curve.points);
-    var moving = false, mx = my = ox = oy = 0, cx, cy,cx2, cy2, mp = -1, mp2= -1;
+    var moving = false, mx = my = ox = oy = 0, cx, cy;
+    // indices of points that will move concurrently
+    var mp = -1, mp2= [], cx2 = [] ,cy2 = [];
     //var apex_move = false;
 
     var handler = { onupdate: function() {} };
 
     cvs.addEventListener("mousedown", function(evt) {
       //console.log(hasFocus);
+
       if (hasFocus == -1){
         fix(evt);
         mx = evt.offsetX;
         my = evt.offsetY;
-        for (let i=0; i< lpts.length; i++){
-          let p = lpts[i];
+        for (let i=0; i< lpts_total.length; i++){
+          let p = lpts_total[i];
           if(Math.abs(mx-p.x)<10 && Math.abs(my-p.y)<10) {
             moving = true;
             mp = i;
             cx = p.x;
             cy = p.y
+            cx2 = [];
+            cy2 = [];
             switch (i){
+              //0-3: ctrl pts for the original curve
+              //4: apex point
+              // 5-8: ctrl pts for the secondary curve
               case 0:
-                mp2 = 1;
+                mp2 = [1, 5, 6];
+                break;
+              case 1:
+                mp2 = [6];
+                break;
+              case 2:
+                mp2 = [7];
                 break;
               case 3:
-                mp2 = 2;
+                mp2 = [2, 7, 8];
+                break;
+              case 5:
+                mp2 = [6];
+                break;
+              case 8:
+                mp2 = [7];
                 break;
               default:
-                mp2 = -1;
+                mp2 = [];
                 break;
             }
-            if (mp2 != -1){
-              cx2 = lpts[mp2].x;
-              cy2 = lpts[mp2].y;
+            if (mp2.length > 0){
+              for (let mp2_target of mp2){
+                cx2.push(lpts_total[mp2_target].x);
+                cy2.push(lpts_total[mp2_target].y);
+              }
+              //console.log(cx2);
             }
             hasFocus = 1;
           }
         }
+        //console.log(lpts_total);
 
       }
     }, false);
@@ -95,9 +124,11 @@ jQuery(function() {
       fix(evt);
       var found = false;
 
-      if(!lpts) return;
-      for (let i = 0; i < lpts.length; i++){
-        let p = lpts[i];
+      if(!lpts_total) return;
+
+      // search for the inner curve's control points
+      for (let i = 0; i < lpts_total.length; i++){
+        let p = lpts_total[i];
         let mx = evt.offsetX;
         let my = evt.offsetY;
         if(Math.abs(mx-p.x)<10 && Math.abs(my-p.y)<10) {
@@ -119,13 +150,18 @@ jQuery(function() {
           let p = curve.project({x: evt.offsetX, y: evt.offsetY});
           apex = Object.assign(apex, p);
         } else {
-          lpts[mp].x = cx + ox;
-          lpts[mp].y = cy + oy;
-          if (mp2 != -1){
-            lpts[mp2].x = cx2 + ox;
-            lpts[mp2].y = cy2 + oy;
+          lpts_total[mp].x = cx + ox;
+          lpts_total[mp].y = cy + oy;
+//          if (mp2 != -a1){
+          //console.log(mp2);
+          for (let mp2_i = 0; mp2_i < mp2.length; mp2_i ++){
+            lpts_total[mp2[mp2_i]].x = cx2[mp2_i] + ox;
+            lpts_total[mp2[mp2_i]].y = cy2[mp2_i] + oy;
+
           }
+          //console.log(lpts_total);
           curve.update();
+          curve2.update();
           let new_apex = curve.get(curve.apex.t);
           apex = Object.assign(curve.apex, new_apex)
 
@@ -501,6 +537,100 @@ jQuery(function() {
     }
   }
 
+  function draw_outer(dfs){
+    // this must follow draw_cross
+    with (dfs){
+      // draw the offsets
+      let ctx = getCanvas().getContext("2d");
+      drawSkeleton(curve2);
+      setColor("#55AA55");
+      drawCurve(curve2);
+      let p1 = curve.points[0];
+      let p4 = curve.points[3];
+      // draw the line between the first and last control points of curve 1 and curve 2
+      ctx.setLineDash([3, 3]);
+      let ctrl1 = {x: p1.x * 2 - curve2.points[0].x, y: p1.y * 2 - curve2.points[0].y};
+      let ctrl2 = {x: p4.x * 2 - curve2.points[3].x, y: p4.y * 2 - curve2.points[3].y};
+      setColor("#FF0000");
+      drawLine(ctrl1, curve2.points[0]);
+      drawLine(ctrl2, curve2.points[3]);
+      ctx.setLineDash([]);
+
+      // find the center of the bend, which is the intersection
+      //drawPoint(bend_ctr);
+
+      // draw where we are measuring MCL thicknesses
+
+
+      let up = {x: p1.x - bend_ctr.x, y: p1.y - bend_ctr.y};
+      let right = {x: curve.apex.x - bend_ctr.x, y: curve.apex.y - bend_ctr.y};
+      let up_mag = find_distance(up, {x: 0, y: 0});
+      let right_mag = find_distance(right, {x: 0, y: 0});
+      up = {x: up.x / up_mag, y: up.y / up_mag};
+      right = {x: right.x / right_mag, y: right.y / right_mag};
+
+      //version 1
+      //45deg, would be the additive vector of "normal" and "derivative"
+
+      let vec_10 = {x: up.x * Math.tan(10 * Math.PI / 180) + right.x, y: up.y * Math.tan(10 * Math.PI / 180) + right.y};
+      let innersect_010 = curve.intersects({p1: bend_ctr, p2: {x: bend_ctr.x + vec_10.x * 5000, y: bend_ctr.y + vec_10.y * 5000 }});
+      //let outersect_010 = curve2.intersects({p1: bend_ctr, p2: {x: bend_ctr.x + vec_10.x * 5000, y: bend_ctr.y + vec_10.y * 5000 }});
+      let vec_10n = curve.normal(innersect_010);
+      let vec_10p = curve.get(innersect_010);
+      let outersect_010 = curve2.intersects({p1: {x: vec_10p.x - vec_10n.x * 5000, y: vec_10p.y - vec_10n.y * 5000},
+                                             p2: {x: vec_10p.x + vec_10n.x * 5000, y: vec_10p.y + vec_10n.y * 5000}});
+      drawLine(curve.get(innersect_010), curve2.get(outersect_010));
+
+      // 90 deg
+      let outersect_090 = curve2.intersects({p1: bend_ctr, p2: {x: bend_ctr.x + right.x * 5000, y: bend_ctr.y + right.y * 5000 }});
+      drawLine(curve.apex, curve2.get(outersect_090));
+
+      // 135deg
+      let vec_135 = {x: right.x - up.x, y: right.y - up.y};
+      let innersect_135 = curve.intersects({p1: bend_ctr, p2: {x: bend_ctr.x + vec_135.x * 5000, y: bend_ctr.y + vec_135.y * 5000 }});
+      //let outersect_135 = curve2.intersects({p1: bend_ctr, p2: {x: bend_ctr.x + vec_135.x * 5000, y: bend_ctr.y + vec_135.y * 5000 }});
+      let vec_135n = curve.normal(innersect_135);
+      let vec_135p = curve.get(innersect_135);
+      let outersect_135 = curve2.intersects({p1: {x: vec_135p.x - vec_135n.x * 5000, y: vec_135p.y - vec_135n.y * 5000},
+                                             p2: {x: vec_135p.x + vec_135n.x * 5000, y: vec_135p.y + vec_135n.y * 5000}});
+      drawLine(curve.get(innersect_135), curve2.get(outersect_135));
+
+
+      // start to populate the text field
+      let scale = (known_dist == 0) ? 1: known_dist / pixel_dist;
+      let thicknesses = [
+                         find_distance(curve.get(innersect_010), curve2.get(outersect_010)) * scale,
+                         find_distance(curve.apex, curve2.get(outersect_090)) * scale,
+                         find_distance(curve.get(innersect_135), curve2.get(outersect_135)) * scale,
+                         find_distance(curve.get(1), curve2.get(1)) * scale,
+                       ];
+
+      $("#outer_display").val(thicknesses.map(x => x.toFixed(2)).join(" | "));
+      // version 2
+      // find points where the normal vector is closest to 45deg and 135deg
+      /*
+      let t_marks = [];
+      let vec_10 = {x: up.x * Math.tan(10 * Math.Pi / 180) + right.x, y: up.y * Math.tan(10 * Math.Pi / 180) + right.y};
+      let vec_10_mag = find_distance(vec_10, {x:0, y:0});
+      vec_10 = {x: vec_10.x / vec_10_mag, y: vec_10.y / vec_10_mag};
+
+      let vec_135 = {x: right.x - up.x, y: right.y - up.y};
+      let vec_135_mag = find_distance(vec_135, {x: 0, y:0});
+      vec_135 = {x: vec_135.x / vec_135_mag, y: vec_135.y / vec_135_mag};
+
+      let prod10 = [];
+      let prod135 = [];
+      for (t = 0; t <= output_freq; t++){
+        let curr_normal = curve.normal(t / output_freq);
+        prod10.push(curr_normal.x * vec_10.x + curr_normal.y * vec_10.y);
+        prod135.push(curr_normal.x * vec_135.x + curr_normal.y * vec_135.y);
+      }
+      let prod10max = prod10.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1];
+      let prod135max = prod135.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1];
+
+      let outersect_010 = curve2.intersects() // intersects with outer curve */
+    }
+  }
 
   function draw_cross(dfs){
     with (dfs){
@@ -532,12 +662,17 @@ jQuery(function() {
       var normal = curve.normal(apex_t);
       // use Cramer's rule to find the intersection
       var intersection = find_intersection(apex, p1, normal, derivative);
-      setColor("#FFFF00");
+
+      setColor("#FF0000");
       //drawPoint(intersection);
       drawLine(apex, intersection);
       drawLine(p1, intersection);
       // draw a vertical line intersecting l1 and l2 from p1 to the end point of l2 (below)
       var intersection2 = find_intersection(p1, p4, derivative, normal);
+      // calculate bend center by being halfway between intersection2 and p1
+      //bend_ctr = {x: p1.x + (intersection2.x - p1.x) * 0.5, y: p1.y + (intersection2.y - p1.y) * 0.5};
+      bend_ctr = intersection;
+
       drawLine(p1, intersection2);
 
       // draw a dotted line l2 parallel to l1 from p4
@@ -553,7 +688,13 @@ jQuery(function() {
       drawLine(ext_pt1, p1);
       drawLine(ext_pt4, p4);
       drawLine(ext_pt1, ext_pt4);
+
+
+
       ctx.setLineDash([]);
+
+
+
 
       // update the Ry and Rz boxes
       Ry = find_distance(apex, intersection);
@@ -588,6 +729,11 @@ jQuery(function() {
                                 min(w / 2 + 50, w-10),max(h/2-50, 10),
                                 min(w/2 + 50, w-10), min(h/2 +50, h-10),
                                 max(w/2-50, 10), min(h/2+50, h-10));
+
+          curve2 = new Bezier(curve.points[0].x, curve.points[0].y - 50,
+                              curve.points[1].x + 50, curve.points[1].y - 50,
+                              curve.points[2].x + 50, curve.points[2].y + 50,
+                              curve.points[3].x, curve.points[3].y + 50);
           var apex_t = 0.5;
           var apex = curve.get(apex_t);
           apex.t = apex_t;
@@ -628,8 +774,13 @@ jQuery(function() {
             //console.log(apex);
             setColor("#00FF00");
             draw_cross(drawfunctions);
+            if ($("#outer_check").is(":checked")){
+              draw_outer(drawfunctions);
+            }
 
-            draw_spokes(drawfunctions);
+            if ($("#hatch_check").is(":checked")){
+              draw_spokes(drawfunctions);
+            }
             //reset colors
             //setColor("#000000");
             //setFill("#000000");
@@ -695,18 +846,15 @@ jQuery(function() {
     }
     output[0] = "0.000\t0.000\t" + Number(Math.abs(curve.curvature(0).r)).toFixed(3);
 
-    let PET_offset = Math.abs(LUTpoints[LUTpoints.length - 1].x * scale);
-    let pres = "Data Summary\nRy\t" + $('#Ry_display').val() + "\tRz\t" + $('#Rz_display').val();
-    pres += "\nMinimum Radius\tr\t" + $('#min_R_display').val() + "\ty\t" + $('#min_R_y_display').val() + "\tz\t" + $('#min_R_z_display').val();
-    pres += "\nArc Length\t" + $('#arc_display').val() + "\tPET Offset\t" + Number(PET_offset).toFixed(2) + "\n";
-    let interposer = "---\t---\t---\n";
-
-
-    $("#txt_output").val(pres + interposer + output.join("\n"));
+    let PET_offset = LUTpoints[LUTpoints.length - 1].x * scale;
 
     // refresh the min_R coordinates
     min_R_y = LUTpoints[min_t].x;
     min_R_z = LUTpoints[min_t].y;
+
+    // obtain the apex coordinates]
+    let apex_y = LUTpoints[Math.round(curve.apex.t * output_freq)].x * scale;
+    let apex_z = LUTpoints[Math.round(curve.apex.t * output_freq)].y * scale;
 
     if (known_dist == 0){
       $('#min_R_y_display').val(Number(min_R_y).toFixed(2));
@@ -717,6 +865,38 @@ jQuery(function() {
       $('#min_R_z_display').val(Number(min_R_z * scale).toFixed(2));
       $('#PEToffset_display').val(Number(PET_offset).toFixed(2))
     }
+
+
+/*
+    let pres = "Data Summary\nRy\t" + $('#Ry_display').val() + "\tRz\t" + $('#Rz_display').val();
+    pres += "\nMinimum Radius\tr\t" + $('#min_R_display').val() + "\ty\t" + $('#min_R_y_display').val() + "\tz\t" + $('#min_R_z_display').val();
+    pres += "\nArc Length\t" + $('#arc_display').val() + "\tPET Offset\t" + Number(PET_offset).toFixed(2) + "\n";
+    let interposer = "---\t---\t---\n";
+    $("#txt_output").val(pres + interposer + output.join("\n"));
+*/
+    $("#txt_output").val(output.join("\n"));
+
+    // csv download output
+    let csv_pres = "Filename, Ry, Rz, s, PET_offset, Apex_coordy, Apex_coordz, MinR, MinR_coordy, MinR_coordz, G1, G2, MCL_80, MCL_90, MCL_135, MCL_180\n";
+    let data_array = [fname, $('#Ry_display').val(), $('#Rz_display').val(), $('#arc_display').val(), Number(PET_offset).toFixed(2), apex_y.toFixed(2), apex_z.toFixed(2),   $('#min_R_display').val(), $('#min_R_y_display').val(), $('#min_R_z_display').val()];
+    data_array.push(...[apex_z.toFixed(2), ($('#Rz_display').val() * 2 - apex_z).toFixed(2)]);
+    data_array.push(...$('#outer_display').val().split('|'));
+    // console.log($('#outer_display').val());
+    // console.log($('#outer_display').val().split('|'));
+    csv_pres += data_array.join(',');
+    var dl_a = $("#csv_anchor").get(0);
+    dl_a.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv_pres);
+    dl_a.target = '_blank';
+    dl_a.download = 'summary.csv';
+
+    // image download output
+    var link = $("#img_anchor")[0];
+    link.download = 'bend_img.jpg';
+    link.href = document.getElementById('canvas').toDataURL()
+
+
+
+
   }
 
   function scalebar_draw(){
@@ -774,6 +954,7 @@ jQuery(function() {
           target_div.attr('data-title', "Drop Bend Image Here");
           target_div.addClass('text-success');
           target_div.removeClass('text-warning');
+          fname = input.files[0].name;
         }
 
         let reader = new FileReader();
@@ -799,6 +980,8 @@ jQuery(function() {
               //canvas[0].dispatchEvent(new Event("mousemove"));
 
               $("#scalebar_bool").attr('disabled', false);
+              $("#hatch_check").attr('disabled', false);
+              $("#outer_check").attr('disabled', false);
 
           };
         };
@@ -823,6 +1006,16 @@ jQuery(function() {
 /*  $(".inputDnD > input[type='file']").on('change', function(){
     readUrl(this);
   });*/
+
+  $("#hatch_check").on('change', function(){
+    canvas.dispatchEvent(new Event('mousemove'));
+    canvas.dispatchEvent(new Event('mouseup'));
+  });
+
+  $("#outer_check").on('change', function(){
+    canvas.dispatchEvent(new Event('mousemove'));
+    canvas.dispatchEvent(new Event('mouseup'));
+  });
 
   // when scale bar is available vs. not
   $("#scalebar_bool").on('change', function(){
@@ -860,6 +1053,7 @@ jQuery(function() {
             $("#min_R_legend").html("Minimal Radius (px)");
             $("#line_legend").html("Additional Bend Info (px)");
           }
+          canvas.dispatchEvent(new Event('mousemove'));
           output_curve(output_freq, known_dist / pixel_dist );
       });
 
@@ -898,8 +1092,27 @@ jQuery(function() {
      $("#min_R_legend").html("Minimal Radius (px)");
      $("#line_legend").html("Additional Bend Info (px)");
     }
+    canvas.dispatchEvent(new Event('mousemove'));
     output_curve(output_freq, known_dist / pixel_dist );
 
+  });
+
+  // front end configuring of the form buttons
+
+  // change the name of the submit button
+  $("input[type=submit]").attr('value', 'Download Fitted Image');
+  // hide the submit button
+  $("input[type=reset]").attr('value', "Download Data Summary");
+
+  // make downloads with the button press
+  $("input[type=submit]").on('click', function(e){
+    e.preventDefault();
+    $("#img_anchor")[0].click();
+  });
+
+  $("input[type=reset]").on('click', function(e){
+    e.preventDefault();
+    $("#csv_anchor")[0].click();
   });
 
 });

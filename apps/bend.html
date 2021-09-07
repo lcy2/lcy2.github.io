@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title> ppom-webtools: bend_shape_analysis v1.2 </title>
+  <title> ppom-webtools: bend_shape_analysis v1.2.3 </title>
 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,15 +16,15 @@
 
 
   <div id="parent-container" class="container-fluid">
-    <h3>bend_shape_analysis v1.2</h3>
+    <h3>bend_shape_analysis v1.2.3</h3>
     <h6><p><br>        Analyzes the bend shape given an image.<br>        </p></h6>
     <form action="?" class="dropzone" method="POST" enctype="multipart/form-data">
-      <input type="hidden" name="csrfmiddlewaretoken" value="UPkEY0JZhHElQapKY9Qkqz0kPCLmyCwx1FnySumyEMJL3NcGVtLIkV7J5zDK3Amh">
+      <input type="hidden" name="csrfmiddlewaretoken" value="aKqxK8F8iey42TrJ5PYslLXSL6ikJBpEvLj4ruxyCzQBjW0n8gu5xoHKTSC7lkcg">
       <p> <div class="row">
   <div class="col-12">
     <div class="form-group inputDnD text-success stacking">
       <label class="sr-only" for="inputFile">canvas</label>
-      <input type="file" name="canvas" class="form-control-file font-weight-bold"  data-title="Drop Bend Image Here" required>
+      <input type="file" name="canvas" class="form-control-file font-weight-bold"  data-title="Drop Bend Image Here">
     </div>
   </div>
 </div>
@@ -48,7 +48,7 @@
           <div class="row">
 
             <div class="col-2">
-             <input type="checkbox" name="bend_info_0" id="scalebar_bool" class="form-control" disabled required>
+             <input type="checkbox" name="bend_info_0" id="scalebar_bool" class="form-control" disabled>
 
 
             </div>
@@ -64,7 +64,7 @@
    <div class="input-group-prepend">
      <div class="input-group-text">Scale</div>
    </div>
-   <input type="text" class="form-control" name="bend_info_1"  placeholder="e.g. 100µm" id="scalebar_length" class="form-control" disabled required>
+   <input type="text" class="form-control" name="bend_info_1"  placeholder="e.g. 100µm" id="scalebar_length" class="form-control" disabled>
  </div>
 
             </div>
@@ -91,7 +91,7 @@
    <div class="input-group-prepend">
      <div class="input-group-text">Ry</div>
    </div>
-   <input type="text" class="form-control" name="bend_info_2"  id="Ry_display" class="form-control" disabled required>
+   <input type="text" class="form-control" name="bend_info_2"  id="Ry_display" class="form-control" disabled>
  </div>
 
             </div>
@@ -107,7 +107,7 @@
    <div class="input-group-prepend">
      <div class="input-group-text">Rz</div>
    </div>
-   <input type="text" class="form-control" name="bend_info_3"  id="Rz_display" class="form-control" disabled required>
+   <input type="text" class="form-control" name="bend_info_3"  id="Rz_display" class="form-control" disabled>
  </div>
 
             </div>
@@ -129,12 +129,12 @@
         <div class = "container-fluid">
           <div class="row">
 
-            <div class="col-6">
+            <div class="col-5">
               <div class="input-group mb-3">
    <div class="input-group-prepend">
      <div class="input-group-text">length</div>
    </div>
-   <input type="text" class="form-control" name="bend_info_4"  id="arc_display" class="form-control" disabled required>
+   <input type="text" class="form-control" name="bend_info_4"  id="arc_display" class="form-control" disabled>
  </div>
 
             </div>
@@ -145,13 +145,30 @@
 
 
 
-            <div class="col-6">
+            <div class="col-5">
               <div class="input-group mb-3">
    <div class="input-group-prepend">
      <div class="input-group-text">offset</div>
    </div>
-   <input type="text" class="form-control" name="bend_info_5"  id="PEToffset_display" class="form-control" disabled required>
+   <input type="text" class="form-control" name="bend_info_5"  id="PEToffset_display" class="form-control" disabled>
  </div>
+
+            </div>
+
+
+
+
+
+
+
+            <div class="col-2">
+             <div class="form-group">
+  <div class="form-inline">
+    <input type="checkbox" name="bend_info_6" class="form-control" id="hatch_check" disabled>
+
+    <label class="form-check-label ml-1" for="hatch_check">hatch</label>
+  </div>
+</div>
 
             </div>
 
@@ -177,7 +194,7 @@
    <div class="input-group-prepend">
      <div class="input-group-text">r</div>
    </div>
-   <input type="text" class="form-control" name="bend_info_6"  id="min_R_display" class="form-control" disabled required>
+   <input type="text" class="form-control" name="bend_info_7"  id="min_R_display" class="form-control" disabled>
  </div>
 
             </div>
@@ -193,7 +210,7 @@
    <div class="input-group-prepend">
      <div class="input-group-text">y</div>
    </div>
-   <input type="text" class="form-control" name="bend_info_7"  id="min_R_y_display" class="form-control" disabled required>
+   <input type="text" class="form-control" name="bend_info_8"  id="min_R_y_display" class="form-control" disabled>
  </div>
 
             </div>
@@ -209,7 +226,7 @@
    <div class="input-group-prepend">
      <div class="input-group-text">z</div>
    </div>
-   <input type="text" class="form-control" name="bend_info_8"  id="min_R_z_display" class="form-control" disabled required>
+   <input type="text" class="form-control" name="bend_info_9"  id="min_R_z_display" class="form-control" disabled>
  </div>
 
             </div>
@@ -221,9 +238,57 @@
     </fieldset>
 
 
-  </div></p>
-<p><label for="txt_output">TSV Output (y, z, r):</label> <textarea name="txt_output" cols="40" rows="10" class="form-control" id="txt_output" required>
+
+
+    <div class=col-12>
+      <fieldset class='info-frame'>
+        <legend class='info-frame' id="outer_legend">
+          Outer Layer Measurements
+        </legend>
+        <div class = "container-fluid">
+          <div class="row">
+
+            <div class="col-1">
+             <div class="form-group">
+  <div class="form-inline">
+    <input type="checkbox" name="bend_info_10" class="form-control" id="outer_check" disabled>
+
+    <label class="form-check-label ml-1" for="outer_check"></label>
+  </div>
+</div>
+
+            </div>
+
+
+
+
+
+
+
+            <div class="col-11">
+              <div class="input-group mb-3">
+   <div class="input-group-prepend">
+     <div class="input-group-text">thicknesses</div>
+   </div>
+   <input type="text" class="form-control" name="bend_info_11"  id="outer_display" class="form-control" disabled>
+ </div>
+
+            </div>
+
+
+          </div>
+        </div>
+      </div>
+    </fieldset>
+
+
+  </div>
+  <a id = "csv_anchor" hidden></a>
+  <a id = "img_anchor" hidden></a></p>
+<p><label for="txt_output">TSV Output (y, z, r):</label> <textarea name="txt_output" cols="40" rows="10" class="form-control" id="txt_output">
 </textarea></p>
+
+      <input type="submit" class="btn btn-outline-primary btn-sm">&nbsp;<input type="reset" class="btn btn-outline-secondary btn-sm">
 
     </form>
     <p><p><br>            Upload the bending side view or cross-section in jpg format.<br>            1. Move the &quot;large PET edge&quot; and &quot;small PET edge&quot; (labeled black circles) to their respective locations.<br>            2. Use the two Bezier control points (unlabeled black circles) to fit the curve to the image.<br>            3. Adjust the apex point (green circle) such that the dotted line extending away is parallel to the module stacks.<br>            4. Ry and Rz will be automatically calculated below.<br>            5. If a scale bar is available in the image, check &quot;scale&quot; and move the yellow line segment to match the scale bar.<br>            6. Enter the length of the scale bar (number + unit). Ry and Rz will be calculated in those units.<br>            7. Additional legend: Blue dot indicates the point of smallest local radius. Red hatches indicate every 50 units of distance.<br>            7. The bend shape in the TSV format is outputted. ⌘+A to select all and copy-paste into your tabulation software of choice.<br>                * Export conventions:<br>                |   A. Large PET edge is always at (0,0).<br>                |   B. Bend apex will have a +y value.<br>                |   C. Small PET edge will always have a +z value.<br>        </p></p>
@@ -233,7 +298,7 @@
 <script src="static/js/popper.min.js"></script>
 <script src="static/js/bootstrap.min.js"></script>
 
-  <!-- <script src="/static/js/app.js"></script> -->
+  <!-- <script src="static/js/app.js"></script> -->
   <script src="static/js/bezier.js" defer></script><script src="static/apps/bend_shape_1_2_form.js" defer></script>
 
 </body>
