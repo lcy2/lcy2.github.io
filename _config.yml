@@ -3,6 +3,7 @@ description: Github Pages
 google_analytics: 
 show_downloads: true
 theme: jekyll-theme-minimal
+baseurl: /
 
 gems:
   - jekyll-mentions
