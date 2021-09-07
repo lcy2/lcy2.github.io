@@ -1,0 +1,8 @@
+title: lcy2.GitHub.io
+description: Github Pages
+google_analytics: 
+show_downloads: true
+theme: jekyll-theme-minimal
+
+gems:
+  - jekyll-mentions
