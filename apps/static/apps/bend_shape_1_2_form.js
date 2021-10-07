@@ -842,9 +842,9 @@ jQuery(function() {
 
     for (let p = 1; p < LUTpoints.length; p++){
       let curvature = curve.curvature(p / freq);
-      output[p] = Number(LUTpoints[p].x * scale).toFixed(3) + "\t" + Number(LUTpoints[p].y * scale).toFixed(3) + "\t" + Number(curvature.r).toFixed(3);
+      output[p] = Number(LUTpoints[p].x * scale).toFixed(3) + "\t" + Number(LUTpoints[p].y * scale).toFixed(3) + "\t" + Number(Math.abs(curvature.r * scale)).toFixed(3);
     }
-    output[0] = "0.000\t0.000\t" + Number(Math.abs(curve.curvature(0).r)).toFixed(3);
+    output[0] = "0.000\t0.000\t" + Number(Math.abs(curve.curvature(0).r) * scale).toFixed(3);
 
     let PET_offset = LUTpoints[LUTpoints.length - 1].x * scale;
 
